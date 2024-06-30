@@ -1,6 +1,7 @@
 import streamlit as st
 import tensorflow as tf
 import numpy as np
+import os
 
 # Function to build the generator model
 def build_generator():
@@ -27,7 +28,22 @@ def build_discriminator():
 # Function to train the GAN
 def train_gan(generator, discriminator, gan, epochs=1000, batch_size=128, sample_interval=100):
     # Example: Implement training logic here
-    pass
+    for epoch in range(epochs):
+        # Example: Training steps
+        if epoch % sample_interval == 0:
+            # Generate images and save/display them
+            noise = np.random.normal(0, 1, (1, 100))
+            generated_image = generator.predict(noise)
+            save_generated_image(generated_image, epoch)  # Example function to save images
+
+# Function to save generated images
+def save_generated_image(image, epoch):
+    if not os.path.exists('generated_images'):
+        os.makedirs('generated_images')
+    image = tf.squeeze(image, axis=0)
+    image = (image + 1) / 2.0  # Scale back to [0, 1]
+    image = tf.image.convert_image_dtype(image, tf.uint8)
+    tf.keras.preprocessing.image.save_img(f'generated_images/generated_{epoch}.png', image)
 
 # Initialize Streamlit app
 def main():
@@ -63,10 +79,12 @@ def main():
         # Train the GAN (you may adjust epochs and batch_size)
         train_gan(generator, discriminator, gan, epochs=1000, batch_size=128, sample_interval=100)
 
-        # Generate and display sample images
+        # Display generated images
         st.subheader("Generated Images")
-        # Replace with actual function to display generated images
-        # sample_images(generator, 999)  # Change the epoch number as needed
+        generated_image_files = os.listdir('generated_images')
+        for image_file in generated_image_files:
+            image_path = os.path.join('generated_images', image_file)
+            st.image(image_path, caption=f"Generated Image {image_file}", use_column_width=True)
 
 if __name__ == '__main__':
     main()
